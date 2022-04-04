@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Grid
 {
@@ -10,14 +11,18 @@ public class Grid
     private int[,] gridArray;
     private int defaultValue = 0;
 
+    private TextMesh[,] debugTextArray;
+
     // Constructor
-    public Grid(int pWidth, int pHeight, float pCellSize)
+    public Grid(int pWidth, int pHeight, float pCellSize, GameObject textHolder)
     {
         // Store variables
         width = pWidth;
         height = pHeight;
         gridArray = new int[width, height];
         cellSize = pCellSize;
+
+        debugTextArray = new TextMesh[width, height];
 
         // Debug
         for (int x = 0; x < gridArray.GetLength(0); x++)
@@ -26,16 +31,32 @@ public class Grid
             {
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
-                Debug.Log("X: " + x + " // Y: " + y);
 
                 gridArray[x, y] = defaultValue;
+
+                debugTextArray[x,y] = CreateWorldText(gridArray[x,y].ToString(), GetWorldPosition(x, y) + (new Vector3(cellSize, cellSize) * 0.5f), 5, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, textHolder.transform);
             }
         }
         Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
         Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
-        Debug.Log("Grid Size: " + width + ", " + height);
+    }
 
-        //new Vector3(cellSize, cellSize) * 0.5
+    public static TextMesh CreateWorldText(string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, Transform parent = null)
+    {
+        GameObject textObject = new GameObject("World_Text", typeof(TextMesh));
+        
+        Transform transform = textObject.transform;
+        transform.SetParent(parent, false);
+        transform.localPosition = localPosition;
+
+        TextMesh textMesh = textObject.GetComponent<TextMesh>();
+        textMesh.anchor = textAnchor;
+        textMesh.alignment = textAlignment;
+        textMesh.text = text;
+        textMesh.fontSize = fontSize;
+        textMesh.color = color;
+        
+        return textMesh;
     }
 
     private Vector3 GetWorldPosition(int x, int y)
@@ -51,40 +72,46 @@ public class Grid
     public void SetCellValue(int x, int y, int value)
     {
         gridArray[x, y] = value;
+        Debug.Log("Array Position (" + x + ", " + y + ") value = " + value);
     }
 
-    public void SetCellValue(Vector2 worldPosition, int value)
+    public Vector2Int SetCellValue(Vector2 worldPosition, int value)
     {
-        Vector2 cellPosition;
+        Vector2Int cellPosition;
         cellPosition = GetXYPosition(worldPosition);
         SetCellValue((int)cellPosition.x, (int)cellPosition.y, value);
-        Debug.Log("X: " + (int)cellPosition.x + " // Y: " + (int)cellPosition.y + " // Value: " + gridArray[(int)cellPosition.x, (int)cellPosition.y]);
+        
+        return cellPosition;
     }
 
-    public void CalculateNeighboringCells(int pX, int pY, int affectedZone, int affectedValue)
+    public void CalculateNeighboringCells(Vector2Int centerCell, int affectedZone, int affectedValue)
     {
-        bool doneLooping = false;
-        int totalAffectZone = (int)Mathf.Pow(affectedZone, 2);
-        int minusX = affectedZone;
-        int minusY = affectedZone;
-        Vector2 startLocation = new Vector2(pX - minusX, pY - minusY);
-        int xMark = 0;
-        int yMark = 0;
+        // Variables
+        Vector2Int currentLoc = new Vector2Int(0, 0);
 
-        while (!doneLooping)
+        // Calculate neighbors
+        for (currentLoc.x = centerCell.x - affectedZone; currentLoc.x < centerCell.x + affectedZone + 1; currentLoc.x++)
         {
-            int multipleAffect = 0;
-
-            for (int i = 0; i < (affectedZone * 2) + 1; i++)
+            Debug.Log("New X is " + currentLoc.x);
+            for (currentLoc.y = centerCell.y - affectedZone; currentLoc.y < centerCell.y + affectedZone + 1; currentLoc.y++)
             {
-                
+                Debug.Log("New Y is " + currentLoc.y);
+                if (currentLoc.x < 0 || currentLoc.x > gridArray.GetLength(0) || currentLoc.y < 0 || currentLoc.y > gridArray.GetLength(1))
+                {
+                    Debug.Log("Skip: Either out of bounds OR at center cell");
+                }
+                else if(currentLoc == centerCell)
+                {
+                    gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y];
+                    debugTextArray[currentLoc.x, currentLoc.y].text = gridArray[currentLoc.x, currentLoc.y].ToString();
+                }
+                else
+                {
+                    gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * (Mathf.Abs(currentLoc.x - centerCell.x) * Mathf.Abs(currentLoc.y + centerCell.y)));
+                    Debug.Log("Array Position (" + currentLoc.x + ", " + currentLoc.y + ") value = " + gridArray[currentLoc.x, currentLoc.y]);
+                    debugTextArray[currentLoc.x, currentLoc.y].text = gridArray[currentLoc.x, currentLoc.y].ToString();
+                }
             }
-
-            multipleAffect += pX - minusX;
-            multipleAffect += pY - minusY;
-
-            gridArray[(int)startLocation.x, (int)startLocation.y] = affectedValue * multipleAffect;
-            Debug.Log("Location (" + startLocation.x + ", " + startLocation.y + ") value is " + gridArray[(int)startLocation.x, (int)startLocation.y]);
         }
     }
 }
