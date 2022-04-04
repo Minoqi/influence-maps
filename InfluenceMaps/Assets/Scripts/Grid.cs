@@ -14,7 +14,7 @@ public class Grid
     private TextMesh[,] debugTextArray;
 
     // Constructor
-    public Grid(int pWidth, int pHeight, float pCellSize, GameObject textHolder)
+    public Grid(int pWidth, int pHeight, float pCellSize, GameObject textHolder, GameObject gridObject)
     {
         // Store variables
         width = pWidth;
@@ -29,16 +29,16 @@ public class Grid
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition((int)gridObject.transform.position.x + x, (int)gridObject.transform.position.y + y), GetWorldPosition((int)gridObject.transform.position.x + x, (int)gridObject.transform.position.y + y + 1), Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition((int)gridObject.transform.position.x + x, (int)gridObject.transform.position.y + y), GetWorldPosition((int)gridObject.transform.position.x + x + 1, (int)gridObject.transform.position.y + y), Color.white, 100f);
 
                 gridArray[x, y] = defaultValue;
 
-                debugTextArray[x,y] = CreateWorldText(gridArray[x,y].ToString(), GetWorldPosition(x, y) + (new Vector3(cellSize, cellSize) * 0.5f), 5, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, textHolder.transform);
+                debugTextArray[x,y] = CreateWorldText(gridArray[x,y].ToString(), GetWorldPosition((int)gridObject.transform.position.x + x, (int)gridObject.transform.position.y + y) + (new Vector3(cellSize, cellSize) * 0.5f), 5, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, textHolder.transform);
             }
         }
-        Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
-        Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
+        Debug.DrawLine(GetWorldPosition((int)gridObject.transform.position.x, height), GetWorldPosition(width, height), Color.white, 100f);
+        Debug.DrawLine(GetWorldPosition(width, (int)gridObject.transform.position.y), GetWorldPosition(width, height), Color.white, 100f);
     }
 
     public static TextMesh CreateWorldText(string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, Transform parent = null)
@@ -59,12 +59,18 @@ public class Grid
         return textMesh;
     }
 
-    private Vector3 GetWorldPosition(int x, int y)
+    public int GetCellValue(Vector2Int gridLocation)
+    {
+        Debug.Log("GetCellValue: " + gridArray[gridLocation.x, gridLocation.y]);
+        return gridArray[gridLocation.x, gridLocation.y];
+    }
+
+    public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x, y) * cellSize;
     }
 
-    private Vector2Int GetXYPosition(Vector3 pWorldPosition)
+    public Vector2Int GetXYPosition(Vector3 pWorldPosition)
     {
         return new Vector2Int(Mathf.FloorToInt(pWorldPosition.x / cellSize), Mathf.FloorToInt(pWorldPosition.y / cellSize));
     }
@@ -72,7 +78,7 @@ public class Grid
     public void SetCellValue(int x, int y, int value)
     {
         gridArray[x, y] = value;
-        Debug.Log("Array Position (" + x + ", " + y + ") value = " + value);
+        //Debug.Log("Array Position (" + x + ", " + y + ") value = " + value);
     }
 
     public Vector2Int SetCellValue(Vector2 worldPosition, int value)
@@ -92,23 +98,32 @@ public class Grid
         // Calculate neighbors
         for (currentLoc.x = centerCell.x - affectedZone; currentLoc.x < centerCell.x + affectedZone + 1; currentLoc.x++)
         {
-            Debug.Log("New X is " + currentLoc.x);
+            //Debug.Log("New X is " + currentLoc.x);
+
             for (currentLoc.y = centerCell.y - affectedZone; currentLoc.y < centerCell.y + affectedZone + 1; currentLoc.y++)
             {
-                Debug.Log("New Y is " + currentLoc.y);
-                if (currentLoc.x < 0 || currentLoc.x > gridArray.GetLength(0) || currentLoc.y < 0 || currentLoc.y > gridArray.GetLength(1))
+                //Debug.Log("New Y is " + currentLoc.y);
+
+                if (currentLoc.x < 0 || currentLoc.x >= gridArray.GetLength(0) || currentLoc.y < 0 || currentLoc.y >= gridArray.GetLength(1)) // Out of bounds
                 {
-                    Debug.Log("Skip: Either out of bounds OR at center cell");
+                    //Debug.Log("Skip: Either out of bounds OR at center cell");
                 }
-                else if(currentLoc == centerCell)
+                else if(currentLoc == centerCell) // Center cell selected
                 {
                     gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y];
                     debugTextArray[currentLoc.x, currentLoc.y].text = gridArray[currentLoc.x, currentLoc.y].ToString();
                 }
-                else
+                else // Adjust values
                 {
-                    gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * (Mathf.Abs(currentLoc.x - centerCell.x) * Mathf.Abs(currentLoc.y + centerCell.y)));
-                    Debug.Log("Array Position (" + currentLoc.x + ", " + currentLoc.y + ") value = " + gridArray[currentLoc.x, currentLoc.y]);
+                    if (gridArray[currentLoc.x, currentLoc.y] != 0)
+                    {
+                        gridArray[currentLoc.x, currentLoc.y] = gridArray[currentLoc.x, currentLoc.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
+                    }
+                    else
+                    {
+                        gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
+                    }
+                    //Debug.Log("Array Position (" + currentLoc.x + ", " + currentLoc.y + ") value = " + gridArray[currentLoc.x, currentLoc.y]);
                     debugTextArray[currentLoc.x, currentLoc.y].text = gridArray[currentLoc.x, currentLoc.y].ToString();
                 }
             }
