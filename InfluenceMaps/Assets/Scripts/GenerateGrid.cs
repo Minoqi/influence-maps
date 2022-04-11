@@ -16,12 +16,14 @@ public class GenerateGrid : MonoBehaviour
     public GameObject textHolder;
     public GameObject gridObject;
 
-    public GameObject turretPrefab;
+    public Transform shipPrefab;
+    public bool shipDown;
 
     // Start is called before the first frame update
     void Start()
     {
         grid = new Grid(width, height, cellSize, textHolder, gridObject);
+        shipDown = false;
     }
 
     private void Update()
@@ -30,31 +32,22 @@ public class GenerateGrid : MonoBehaviour
         {
             // Variables
             Vector3 mouseClickWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2Int mouseClickArrayPosition;
+            Vector2Int mouseClickArrayPosition; 
 
             mouseClickArrayPosition = grid.SetCellValue(mouseClickWorldPosition, startValue);
 
-            if (grid.GetCellValue(mouseClickArrayPosition) != startValue)
-            {
-                grid.CalculateNeighboringCells(mouseClickArrayPosition, affectedZone, affectedValue);
-            }
-
-            // Debugs
-            //Debug.Log("Mouse World Position: " + mouseClickWorldPosition);
-            //Debug.Log("Mouse Array Position: " + mouseClickArrayPosition);
+            grid.CalculateNeighboringCells(mouseClickArrayPosition, affectedZone, affectedValue);
         }
-    }
+        else if (Input.GetMouseButtonDown(1) && !shipDown)
+        {
+            // Variables
+            Vector3 mouseClickWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2Int mouseClickArrayPosition;
 
-    public Vector2Int GetCurrentGridArrayLocation(Vector2 worldPosition)
-    {
-        Debug.Log("Current Grid Array Location: " + grid.GetXYPosition(worldPosition));
-        return grid.GetXYPosition(worldPosition);
-    }
-
-    public int GetValueOfGridArrayLocation(Vector2Int gridLocation)
-    {
-        Debug.Log("Current Grid Array Location Value Function: (" + gridLocation.x + ", " + gridLocation.y + ")");
-        Debug.Log("Current Grid Array Location Value: " + grid.GetCellValue(gridLocation));
-        return grid.GetCellValue(gridLocation);
+            // Place Object
+            mouseClickArrayPosition = grid.GetXYPosition(mouseClickWorldPosition);
+            Instantiate(shipPrefab, grid.GetWorldPosition(mouseClickArrayPosition.x, mouseClickArrayPosition.y), Quaternion.identity);
+            shipDown = true;
+        }
     }
 }

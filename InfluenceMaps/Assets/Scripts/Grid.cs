@@ -61,7 +61,6 @@ public class Grid
 
     public int GetCellValue(Vector2Int gridLocation)
     {
-        Debug.Log("GetCellValue: " + gridArray[gridLocation.x, gridLocation.y]);
         return gridArray[gridLocation.x, gridLocation.y];
     }
 
@@ -78,7 +77,6 @@ public class Grid
     public void SetCellValue(int x, int y, int value)
     {
         gridArray[x, y] = value;
-        //Debug.Log("Array Position (" + x + ", " + y + ") value = " + value);
     }
 
     public Vector2Int SetCellValue(Vector2 worldPosition, int value)
@@ -98,15 +96,11 @@ public class Grid
         // Calculate neighbors
         for (currentLoc.x = centerCell.x - affectedZone; currentLoc.x < centerCell.x + affectedZone + 1; currentLoc.x++)
         {
-            //Debug.Log("New X is " + currentLoc.x);
-
             for (currentLoc.y = centerCell.y - affectedZone; currentLoc.y < centerCell.y + affectedZone + 1; currentLoc.y++)
             {
-                //Debug.Log("New Y is " + currentLoc.y);
-
                 if (currentLoc.x < 0 || currentLoc.x >= gridArray.GetLength(0) || currentLoc.y < 0 || currentLoc.y >= gridArray.GetLength(1)) // Out of bounds
                 {
-                    //Debug.Log("Skip: Either out of bounds OR at center cell");
+                    Debug.Log("Skip: Either out of bounds OR at center cell");
                 }
                 else if(currentLoc == centerCell) // Center cell selected
                 {
@@ -117,13 +111,14 @@ public class Grid
                 {
                     if (gridArray[currentLoc.x, currentLoc.y] != 0)
                     {
-                        gridArray[currentLoc.x, currentLoc.y] = gridArray[currentLoc.x, currentLoc.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
+                        gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
+                        //gridArray[currentLoc.x, currentLoc.y] = gridArray[currentLoc.x, currentLoc.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
                     }
                     else
                     {
                         gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
                     }
-                    //Debug.Log("Array Position (" + currentLoc.x + ", " + currentLoc.y + ") value = " + gridArray[currentLoc.x, currentLoc.y]);
+
                     debugTextArray[currentLoc.x, currentLoc.y].text = gridArray[currentLoc.x, currentLoc.y].ToString();
                 }
             }
