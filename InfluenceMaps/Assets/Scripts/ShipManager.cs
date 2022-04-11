@@ -13,10 +13,13 @@ public class ShipManager : MonoBehaviour
     public int health, speed;
     public Vector2 move;
 
+    public bool inEnemyRange;
+
     // Start is called before the first frame update
     void Start()
     {
         gridManager = GameObject.FindGameObjectWithTag("Grid");
+        inEnemyRange = false;
 
         gridArrayPosition = gridManager.GetComponent<GenerateGrid>().grid.GetXYPosition(this.gameObject.transform.position);
         lastArrayPosition = gridArrayPosition;
@@ -25,22 +28,25 @@ public class ShipManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Update Position on Array
-        gridArrayPosition = gridManager.GetComponent<GenerateGrid>().grid.GetXYPosition(this.gameObject.transform.position);
-
-        // Update Health
-        if (lastArrayPosition != gridArrayPosition)
+        if (inEnemyRange)
         {
-            lastArrayPosition = gridArrayPosition;
-            health -= gridManager.GetComponent<GenerateGrid>().grid.GetCellValue(lastArrayPosition);
+            // Update Position on Array
+            gridArrayPosition = gridManager.GetComponent<GenerateGrid>().grid.GetXYPosition(this.gameObject.transform.position);
 
-            Debug.Log("Ship Took Damage: " + gridManager.GetComponent<GenerateGrid>().grid.GetCellValue(lastArrayPosition));
-
-            if (health <= 0)
+            // Update Health
+            if (lastArrayPosition != gridArrayPosition)
             {
-                Debug.Log("Ship Destroyed");
-                gridManager.GetComponent<GenerateGrid>().shipDown = false;
-                Destroy(this.gameObject);
+                lastArrayPosition = gridArrayPosition;
+                health -= gridManager.GetComponent<GenerateGrid>().grid.GetCellValue(lastArrayPosition);
+
+                Debug.Log("Ship Took Damage: " + gridManager.GetComponent<GenerateGrid>().grid.GetCellValue(lastArrayPosition));
+
+                if (health <= 0)
+                {
+                    Debug.Log("Ship Destroyed");
+                    gridManager.GetComponent<GenerateGrid>().shipDown = false;
+                    Destroy(this.gameObject);
+                }
             }
         }
 

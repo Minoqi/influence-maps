@@ -160,6 +160,7 @@ MonoBehaviour:
   affectedValue: 2
   textHolder: {fileID: 1162561182}
   gridObject: {fileID: 421739684}
+  enemyShipPrefab: {fileID: 4890423806201960037, guid: 5d6b2674f7dc43749b3f4fd562edc8ef, type: 3}
   shipPrefab: {fileID: 2534047892035861677, guid: 330f78e5aa2ae0847b09c85111c6175c, type: 3}
   shipDown: 0
 --- !u!4 &421739686

@@ -16,6 +16,7 @@ public class GenerateGrid : MonoBehaviour
     public GameObject textHolder;
     public GameObject gridObject;
 
+    public Transform enemyShipPrefab;
     public Transform shipPrefab;
     public bool shipDown;
 
@@ -37,6 +38,10 @@ public class GenerateGrid : MonoBehaviour
             mouseClickArrayPosition = grid.SetCellValue(mouseClickWorldPosition, startValue);
 
             grid.CalculateNeighboringCells(mouseClickArrayPosition, affectedZone, affectedValue);
+
+            // Place Enemy Ship
+            mouseClickArrayPosition = grid.GetXYPosition(mouseClickWorldPosition);
+            Instantiate(enemyShipPrefab, grid.GetWorldPosition(mouseClickArrayPosition.x, mouseClickArrayPosition.y), Quaternion.identity);
         }
         else if (Input.GetMouseButtonDown(1) && !shipDown)
         {
@@ -44,7 +49,7 @@ public class GenerateGrid : MonoBehaviour
             Vector3 mouseClickWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2Int mouseClickArrayPosition;
 
-            // Place Object
+            // Place Ship
             mouseClickArrayPosition = grid.GetXYPosition(mouseClickWorldPosition);
             Instantiate(shipPrefab, grid.GetWorldPosition(mouseClickArrayPosition.x, mouseClickArrayPosition.y), Quaternion.identity);
             shipDown = true;

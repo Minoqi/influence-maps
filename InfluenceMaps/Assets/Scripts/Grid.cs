@@ -111,8 +111,7 @@ public class Grid
                 {
                     if (gridArray[currentLoc.x, currentLoc.y] != 0)
                     {
-                        gridArray[currentLoc.x, currentLoc.y] = gridArray[centerCell.x, centerCell.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
-                        //gridArray[currentLoc.x, currentLoc.y] = gridArray[currentLoc.x, currentLoc.y] - (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
+                        gridArray[currentLoc.x, currentLoc.y] = gridArray[currentLoc.x, currentLoc.y] + (affectedValue * Mathf.FloorToInt((currentLoc - centerCell).magnitude));
                     }
                     else
                     {
